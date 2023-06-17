@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clonee/common/common.dart';
+import 'package:twitter_clonee/features/auth/controller/auth_controller.dart';
 import 'package:twitter_clonee/features/tweet/controller/tweet_controller.dart';
 import 'package:twitter_clonee/features/tweet/widgets/tweet_card.dart';
 import 'package:twitter_clonee/models/tweet_model.dart';
@@ -12,6 +13,8 @@ class TweetList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currUser = ref.watch(currentUserDetailsProvider).value;
+    if (currUser == null) return const Text("NUll");
     return ref.watch(getTweetsProvider).when(
         data: (tweets) {
           return ref.watch(getLatestTweetProvider).when(
