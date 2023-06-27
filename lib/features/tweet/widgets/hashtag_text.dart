@@ -1,7 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:twitter_clonee/features/tweet/views/hashtag_view.dart';
 import 'package:twitter_clonee/theme/theme.dart';
 
 class HashtagText extends StatelessWidget {
@@ -19,13 +21,16 @@ class HashtagText extends StatelessWidget {
         if (element.startsWith('#')) {
           textspans.add(
             TextSpan(
-              text: '$element ',
-              style: const TextStyle(
-                color: Pallete.blueColor,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+                text: '$element ',
+                style: const TextStyle(
+                  color: Pallete.blueColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    Navigator.push(context, HashTagView.route(element));
+                  }),
           );
         } else if (element.startsWith('www.') ||
             element.startsWith('https://')) {

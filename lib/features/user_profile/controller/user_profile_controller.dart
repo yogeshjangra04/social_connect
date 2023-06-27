@@ -1,16 +1,20 @@
 import 'dart:io';
 
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clonee/apis/storage_api.dart';
 import 'package:twitter_clonee/apis/tweet_api.dart';
 import 'package:twitter_clonee/apis/user_api.dart';
+import 'package:twitter_clonee/core/enums/notification_type_enum.dart';
+import 'package:twitter_clonee/core/providers.dart';
 import 'package:twitter_clonee/core/utils.dart';
+import 'package:twitter_clonee/features/notifications/notification_controller.dart';
 import 'package:twitter_clonee/models/tweet_model.dart';
 import 'package:twitter_clonee/models/user_model.dart';
 
 final userProfileControllerProvider =
-    StateNotifierProvider<UserProfileController, bool>((ref) {
+    StateNotifierProvider.autoDispose<UserProfileController, bool>((ref) {
   return UserProfileController(
     userAPI: ref.watch(
       userAPIProvider,
@@ -21,29 +25,36 @@ final userProfileControllerProvider =
     tweetAPI: ref.watch(
       tweetAPIProvider,
     ),
+    notificationController: ref.watch(notificationControllerProvider.notifier),
   );
 });
-final getUserTweetsProvider = FutureProvider.family((ref, String uid) async {
+final getUserTweetsProvider =
+    FutureProvider.autoDispose.family((ref, String uid) async {
   final userProfileController =
       ref.watch(userProfileControllerProvider.notifier);
   return userProfileController.getUserTweets(uid);
 });
-final getLatestUserProfileDataProvider = StreamProvider.autoDispose((ref) {
+final getLatestUserProfileDataProvider =
+    StreamProvider.autoDispose.family((ref, String uid) {
   final userAPI = ref.watch(userAPIProvider);
-  return userAPI.getLatestUserProfileData();
+  Realtime stream = Realtime(ref.watch(appwriteClientProvider));
+  return userAPI.getLatestUserProfileData(uid, stream);
 });
 
 class UserProfileController extends StateNotifier<bool> {
   final TweetAPI _tweetAPI;
   final StorageAPI _storageAPI;
   final UserAPI _userAPI;
+  final NotificationController _notificationController;
   UserProfileController({
     required TweetAPI tweetAPI,
     required StorageAPI storageAPI,
     required UserAPI userAPI,
+    required NotificationController notificationController,
   })  : _tweetAPI = tweetAPI,
         _storageAPI = storageAPI,
         _userAPI = userAPI,
+        _notificationController = notificationController,
         super(false);
 
   Future<List<Tweet>> getUserTweets(String uid) async {
@@ -73,7 +84,7 @@ class UserProfileController extends StateNotifier<bool> {
         context,
         l.message,
       ),
-      (r) => null,
+      (r) => Navigator.pop(context),
     );
   }
 
@@ -98,7 +109,13 @@ class UserProfileController extends StateNotifier<bool> {
         final res2 = await _userAPI.addToFollowing(currUser);
         res2.fold(
           (l) => showSnackBar(context, l.message),
-          (r) => null,
+          (r) {
+            _notificationController.createNotification(
+                text: "${currUser.name} followed you",
+                postID: '',
+                uid: '',
+                notificationType: NotificationType.follow);
+          },
         );
       },
     );

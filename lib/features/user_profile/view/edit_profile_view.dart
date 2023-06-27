@@ -64,6 +64,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserDetailsProvider).value;
+    // print(user!.bio);
     final isLoading = ref.watch(userProfileControllerProvider);
     return Scaffold(
       appBar: AppBar(

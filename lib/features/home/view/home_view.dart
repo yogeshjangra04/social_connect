@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:twitter_clonee/constants/constants.dart';
+import 'package:twitter_clonee/features/home/widgets/side_drawer.dart';
 // import 'package:twitter_clone/features/home/widgets/side_drawer.dart';
 // import 'package:twitter_clone/features/tweet/views/create_tweet_view.dart';
 import 'package:twitter_clonee/theme/pallete.dart';
@@ -35,6 +36,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const SideDrawer(),
       appBar: _page == 0 ? appBar : null,
       body: IndexedStack(
         index: _page,

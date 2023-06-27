@@ -19,23 +19,34 @@ class TweetList extends ConsumerWidget {
         data: (tweets) {
           return ref.watch(getLatestTweetProvider).when(
               data: (data) {
-                if (data.events.contains(
-                    'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.create')) {
-                  tweets.insert(0, Tweet.fromMap(data.payload));
-                } else if (data.events.contains(
-                    'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.update')) {
-                  final startingPoint =
-                      data.events[0].lastIndexOf('documents.');
-                  final endingPoint = data.events[0].lastIndexOf('.update');
-                  final tweetId =
-                      data.events[0].substring(startingPoint + 10, endingPoint);
-                  var tweet =
-                      tweets.where((element) => element.id == tweetId).first;
-                  final tweetIndex = tweets.indexOf(tweet);
-                  tweets.removeWhere((element) => element.id == tweetId);
-                  tweet = Tweet.fromMap(data.payload);
-                  tweets.insert(tweetIndex, tweet);
+                final latestTweet = Tweet.fromMap(data.payload);
+                bool isTweetPresent = false;
+                for (final tweetModel in tweets) {
+                  if (tweetModel.id == latestTweet.id) {
+                    isTweetPresent = true;
+                    break;
+                  }
                 }
+                if (!isTweetPresent) {
+                  if (data.events.contains(
+                      'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.create')) {
+                    tweets.insert(0, Tweet.fromMap(data.payload));
+                  } else if (data.events.contains(
+                      'databases.*.collections.${AppwriteConstants.tweetsCollection}.documents.*.update')) {
+                    final startingPoint =
+                        data.events[0].lastIndexOf('documents.');
+                    final endingPoint = data.events[0].lastIndexOf('.update');
+                    final tweetId = data.events[0]
+                        .substring(startingPoint + 10, endingPoint);
+                    var tweet =
+                        tweets.where((element) => element.id == tweetId).first;
+                    final tweetIndex = tweets.indexOf(tweet);
+                    tweets.removeWhere((element) => element.id == tweetId);
+                    tweet = Tweet.fromMap(data.payload);
+                    tweets.insert(tweetIndex, tweet);
+                  }
+                }
+
                 return ListView.builder(
                   itemCount: tweets.length,
                   itemBuilder: ((context, index) {

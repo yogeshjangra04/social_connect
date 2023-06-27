@@ -15,6 +15,7 @@ class UserProfile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print(user.followers.length);
     final currentUser = ref.watch(currentUserDetailsProvider).value;
     return currentUser == null
         ? const Loader()
@@ -120,20 +121,24 @@ class UserProfile extends ConsumerWidget {
                             children: [
                               FollowCount(
                                 text: 'Followers',
-                                count: user.followers.length - 1,
+                                count: user.followers.length == 1
+                                    ? 0
+                                    : user.followers.length - 1,
                               ),
                               const SizedBox(
                                 width: 15,
                               ),
                               FollowCount(
                                 text: 'Following',
-                                count: user.following.length - 1,
+                                count: user.following.length == 1
+                                    ? 0
+                                    : user.following.length - 1,
                               ),
                             ],
                           ),
-                          const SizedBox(
-                            height: 2,
-                          ),
+                          // const SizedBox(
+                          //   height: 2,
+                          // ),
                           const Divider(
                             color: Pallete.whiteColor,
                           ),
@@ -145,6 +150,7 @@ class UserProfile extends ConsumerWidget {
               },
               body: ref.watch(getUserTweetsProvider(user.uid)).when(
                     data: (tweets) {
+                      // print(tweets);
                       return ListView.builder(
                         itemCount: tweets.length,
                         itemBuilder: ((context, index) {

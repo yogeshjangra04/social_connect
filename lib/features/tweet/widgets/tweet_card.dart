@@ -21,8 +21,9 @@ import 'package:timeago/timeago.dart' as timeago;
 class TweetCard extends ConsumerWidget {
   final Tweet tweet;
   const TweetCard({
+    Key? key,
     required this.tweet,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

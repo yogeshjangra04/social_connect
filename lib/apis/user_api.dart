@@ -12,7 +12,7 @@ import '../models/user_model.dart';
 final userAPIProvider = Provider((ref) {
   return UserAPI(
     db: ref.watch(appwriteDatabaseProvider),
-    realtime: ref.watch(appwriteRealtimeProvider),
+    realtimes: ref.watch(appwriteReal2timeProvider),
   );
 });
 
@@ -21,19 +21,23 @@ abstract class IUserAPI {
   Future<model.Document> getUserData(String uid);
   Future<List<model.Document>> searchUserByName(String name);
   FutureEitherVoid updateUserData(UserModel userModel);
-  Stream<RealtimeMessage> getLatestUserProfileData();
+  Stream<RealtimeMessage> getLatestUserProfileData(
+      String uid, Realtime realtime);
   FutureEitherVoid followUser(UserModel user);
   FutureEitherVoid addToFollowing(UserModel user);
 }
 
 class UserAPI implements IUserAPI {
   final Databases _db;
-  final Realtime _realtime;
+  final Realtime _realtimes;
+
   UserAPI({
     required Databases db,
-    required Realtime realtime,
+    // required Realtime realtime,
+    required Realtime realtimes,
   })  : _db = db,
-        _realtime = realtime;
+        // _realtime = realtime;
+        _realtimes = realtimes;
 
   @override
   FutureEitherVoid saveUserData(UserModel userModel) async {
@@ -102,9 +106,10 @@ class UserAPI implements IUserAPI {
   }
 
   @override
-  Stream<RealtimeMessage> getLatestUserProfileData() {
-    return _realtime.subscribe([
-      'databases.${AppwriteConstants.databaseId}.collections.${AppwriteConstants.usersCollection}.documents'
+  Stream<RealtimeMessage> getLatestUserProfileData(
+      String uid, Realtime realtime) {
+    return realtime.subscribe([
+      'databases.${AppwriteConstants.databaseId}.collections.${AppwriteConstants.usersCollection}.documents.$uid'
     ]).stream;
   }
 

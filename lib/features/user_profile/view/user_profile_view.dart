@@ -29,7 +29,7 @@ class UserProfileView extends ConsumerWidget {
     return Scaffold(
       body: currUser == null
           ? const Loader()
-          : ref.watch(getLatestUserProfileDataProvider).when(
+          : ref.watch(getLatestUserProfileDataProvider(userModel.uid)).when(
                 data: (data) {
                   print(data.events);
                   if (data.events.contains(

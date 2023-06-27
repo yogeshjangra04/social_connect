@@ -30,3 +30,14 @@ final appwriteRealtimeProvider = Provider((ref) {
   final client = ref.watch(appwriteClientProvider);
   return Realtime(client);
 });
+
+// this ones for userdetails
+final appwriteReal2timeProvider = Provider((ref) {
+  final client = ref.watch(appwriteClientProvider);
+  return Realtime(client);
+});
+// this ones for notifications
+final appwriteReal3timeProvider = Provider((ref) {
+  final client = ref.watch(appwriteClientProvider);
+  return Realtime(client);
+});

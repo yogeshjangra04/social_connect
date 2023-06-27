@@ -8,6 +8,7 @@ import 'package:twitter_clonee/features/auth/view/login_view.dart';
 import 'package:twitter_clonee/features/auth/view/signup_view.dart';
 import 'package:twitter_clonee/core/core.dart';
 import 'package:twitter_clonee/features/home/view/home_view.dart';
+import 'package:twitter_clonee/features/user_profile/controller/user_profile_controller.dart';
 
 import '../../../apis/user_api.dart';
 import '../../../models/user_model.dart';
@@ -22,20 +23,39 @@ final authControllerProvider =
   );
 });
 
-final currentUserDetailsProvider = FutureProvider((ref) {
-  final currentUserId = ref.watch(currentUserAccountProvider).value!.$id;
-  final userDetails = ref.watch(userDetailsProvider(currentUserId));
-  return userDetails.value;
+final currentUserDetailsProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(currentUserAccountProvider).when(
+        data: (data) {
+          if (data != null) {
+            final currentUserId = data.$id;
+            final userDetails = ref.watch(
+              userDetailsProvider(currentUserId),
+            );
+            return userDetails.value;
+          } else {
+            ref.invalidate(currentUserAccountProvider);
+          }
+          return null;
+        },
+        error: (error, st) => null,
+        loading: () => null,
+      );
 });
 
-final userDetailsProvider = FutureProvider.family((ref, String uid) {
+final userDetailsProvider =
+    FutureProvider.autoDispose.family((ref, String uid) {
   final authController = ref.watch(authControllerProvider.notifier);
+  ref.watch(getLatestUserProfileDataProvider(uid));
   return authController.getUserData(uid);
 });
 
-final currentUserAccountProvider = FutureProvider((ref) {
+final currentUserAccountProvider = FutureProvider.autoDispose((ref) {
   final authController = ref.watch(authControllerProvider.notifier);
-  return authController.currentUser();
+  final res = authController.currentUser();
+  res.asStream().listen((account) {
+    debugPrint('LoggedInAccount:-  ${account!.$id}');
+  });
+  return res;
 });
 
 class AuthController extends StateNotifier<bool> {
@@ -127,14 +147,14 @@ class AuthController extends StateNotifier<bool> {
     return updatedUser;
   }
 
-//   void logout(BuildContext context) async {
-//     final res = await _authAPI.logout();
-//     res.fold((l) => null, (r) {
-//       Navigator.pushAndRemoveUntil(
-//         context,
-//         SignUpView.route(),
-//         (route) => false,
-//       );
-//     });
-//   }
+  void logout(BuildContext context) async {
+    final res = await _authAPI.logout();
+    res.fold((l) => null, (r) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        SignUpView.route(),
+        (route) => false,
+      );
+    });
+  }
 }
